@@ -8,32 +8,34 @@ import (
 	jpegstructure "github.com/dsoprea/go-jpeg-image-structure/v2"
 )
 
-func Terminate(r io.Reader, fileSize int, mediaType string) error {
+func Terminate(in io.Reader, fileSize int, mediaType string) (io.Reader, error) {
 	switch mediaType {
 	case "jpeg", "jpg":
-		return terminateJpeg(r, fileSize)
+		return terminateJpeg(in, fileSize, mediaType)
 	default:
-		return fmt.Errorf("mediaType %s cannot be processed", mediaType)
+		return nil, fmt.Errorf("mediaType %s cannot be processed", mediaType)
 	}
-
 }
 
-func terminateJpeg(r io.Reader, fileSize int) error {
-	s := bufio.NewScanner(r)
+func terminateJpeg(in io.Reader, fileSize int, mediaType string) (io.Reader, error) {
+	pipeReader, pipeWriter := io.Pipe()
 
-	// Since each segment can be any size, our buffer must allowed to grow as
-	// large as the file.
-	buffer := []byte{}
-	s.Buffer(buffer, fileSize)
+	v := &jpegVisitor{
+		writer: pipeWriter,
+	}
 
-	v := &jpegVisitor{}
 	js := jpegstructure.NewJpegSplitter(v)
 	v.js = js
 
+	s := bufio.NewScanner(in)
+	s.Buffer([]byte{}, fileSize)
 	s.Split(js.Split)
 
-	for s.Scan() {
-	}
+	go func() {
+		for s.Scan() {
+		}
+		pipeWriter.Close()
+	}()
 
-	return nil
+	return pipeReader, nil
 }
