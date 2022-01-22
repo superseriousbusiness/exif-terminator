@@ -1,5 +1,7 @@
 # exif-terminator
 
+`exif-terminator` removes exif data from images in a streaming manner. All you need to do is provide a reader of the image in, and exif-terminator will provide a reader of the image out.
+
 Hasta la vista, baby!
 
 ```text

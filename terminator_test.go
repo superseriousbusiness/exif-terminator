@@ -1,7 +1,8 @@
 package terminator_test
 
 import (
-	"fmt"
+	"bytes"
+	"image/jpeg"
 	"io"
 	"os"
 	"testing"
@@ -28,14 +29,17 @@ func (suite *TerminatorTestSuite) TestTerminateKitten() {
 	out, err := terminator.Terminate(kitten, int(stat.Size()), "jpeg")
 	suite.NoError(err)
 
+	// we should be able to get some bytes back from the returned reader
 	b, err := io.ReadAll(out)
 	suite.NoError(err)
 	suite.NotEmpty(b)
 
-	fmt.Println(len(b))
+	// the processed image should have the same size as the initial image
+	suite.EqualValues(stat.Size(), len(b))
 
-	os.WriteFile("test.jpeg", b, 0666)
-
+	// should be decodable as a jpeg
+	_, err = jpeg.Decode(bytes.NewBuffer(b))
+	suite.NoError(err)
 }
 
 func (suite *TerminatorTestSuite) TestTerminateSloth() {
@@ -52,11 +56,17 @@ func (suite *TerminatorTestSuite) TestTerminateSloth() {
 	out, err := terminator.Terminate(sloth, int(stat.Size()), "jpeg")
 	suite.NoError(err)
 
-	b := []byte{}
-	_, err = out.Read(b)
+	// we should be able to get some bytes back from the returned reader
+	b, err := io.ReadAll(out)
 	suite.NoError(err)
-
 	suite.NotEmpty(b)
+
+	// the processed image should have the same size as the initial image
+	suite.EqualValues(stat.Size(), len(b))
+
+	// should be decodable as a jpeg
+	_, err = jpeg.Decode(bytes.NewBuffer(b))
+	suite.NoError(err)
 }
 
 func TestTerminatorTestSuite(t *testing.T) {
