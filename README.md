@@ -1,6 +1,6 @@
 # exif-terminator
 
-`exif-terminator` removes exif data from images in a streaming manner. All you need to do is provide a reader of the image in, and exif-terminator will provide a reader of the image out.
+`exif-terminator` removes exif data from images (jpeg and png currently supported) in a streaming manner. All you need to do is provide a reader of the image in, and exif-terminator will provide a reader of the image out.
 
 Hasta la vista, baby!
 
@@ -46,3 +46,71 @@ Hasta la vista, baby!
                .;,;:;...,::.  .;lokXKKNMMMWNOc,;;;,::;'...lOKNWNKkol:,..cKdcO0do
                        .:;...  .. .,:okO0KNN0:.',,''''. ':xNMWKkxxOKXd,.cNk,:l:o
 ```
+
+## Why?
+
+Exif removal is a pain in the arse. Most other libraries seem to parse the whole image into memory, then remove the exif data, then encode the image again.
+
+`exif-terminator` differs in that it removes exif data *while scanning through the image bytes*, and it doesn't do any reencoding of the image. Bytes of exif data are simply all set to 0, and the image data is piped back out again into the returned reader.
+
+## Example
+
+```go
+package test
+
+import (
+  "io"
+  "os"
+
+  terminator "github.com/superseriousbusiness/exif-terminator"
+)
+
+func main() {
+  // open a file
+  sloth, err := os.Open("./images/sloth.jpg")
+  if err != nil {
+    panic(err)
+  }
+
+  // get the length of the file
+  stat, err := sloth.Stat()
+  if err != nil {
+    panic(err)
+  }
+
+  // terminate!
+  out, err := terminator.Terminate(sloth, int(stat.Size()), "jpeg")
+  if err != nil {
+    panic(err)
+  }
+
+  // read the bytes from the reader
+  b, err := io.ReadAll(out)
+  if err != nil {
+    panic(err)
+  }
+
+  // save the file somewhere
+  if err := os.WriteFile("./images/sloth-clean.jpg", b, 0666); err != nil {
+    panic(err)
+  }
+}
+```
+
+## Credits
+
+### Libraries
+
+`exif-terminator` borrows heavily from the two [`dsoprea`](https://github.com/dsoprea) libraries credited below. In fact, it's basically a hack on top of those libraries. Thanks `dsoprea`!
+
+- [dsoprea/go-jpeg-image-structure](https://github.com/dsoprea/go-jpeg-image-structure): jpeg structure parsing. [MIT License](https://spdx.org/licenses/MIT.html).
+- [dsoprea/go-png-image-structure](https://github.com/dsoprea/go-png-image-structure): png structure parsing. [MIT License](https://spdx.org/licenses/MIT.html).
+- [stretchr/testify](https://github.com/stretchr/testify); test framework. [MIT License](https://spdx.org/licenses/MIT.html).
+
+## License
+
+![the gnu AGPL logo](https://www.gnu.org/graphics/agplv3-155x51.png)
+
+`exif-terminator` is free software, licensed under the [GNU AGPL v3 LICENSE](LICENSE).
+
+Copyright (C) 2022 SuperSeriousBusiness.
