@@ -3,7 +3,7 @@ module github.com/superseriousbusiness/exif-terminator
 go 1.17
 
 require (
-	github.com/dsoprea/go-jpeg-image-structure/v2 v2.0.0-20210512043942-b434301c6836
+	github.com/superseriousbusiness/go-jpeg-image-structure/v2 v2.0.0-20220321154430-d89a106fdabe
 	github.com/dsoprea/go-png-image-structure/v2 v2.0.0-20210512210324-29b889a6093d
 	github.com/stretchr/testify v1.7.0
 )
