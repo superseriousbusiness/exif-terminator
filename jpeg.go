@@ -19,10 +19,12 @@
 package terminator
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"io"
 
+	exif "github.com/dsoprea/go-exif/v3"
 	jpegstructure "github.com/superseriousbusiness/go-jpeg-image-structure/v2"
 )
 
@@ -121,17 +123,93 @@ func (v *jpegVisitor) writeSegment(s *jpegstructure.Segment) error {
 		}
 	}
 
-	if s.IsExif() {
-		// if this segment is exif data, write blank bytes
-		blank := make([]byte, len(s.Data))
-		if _, err := w.Write(blank); err != nil {
+	if !s.IsExif() {
+		// if this isn't exif data just copy it over and bail
+		_, err := w.Write(s.Data)
+		return err
+	}
+
+	ifd, _, err := s.Exif()
+	if err != nil {
+		return err
+	}
+
+	fmt.Println()
+	fmt.Println(s.Data)
+	fmt.Println()
+
+	// amount of bytes we've written into the exif body
+	var written int
+
+	if tagEntries, err := ifd.FindTagWithName("Orientation"); err == nil && len(tagEntries) == 1 {
+
+		ifd.Offset()
+
+		b := bytes.Buffer{}
+
+		exifHeader, err := exif.BuildExifHeader(ifd.ByteOrder(), exif.ExifDefaultFirstIfdOffset)
+		if err != nil {
 			return err
 		}
-	} else {
-		// otherwise write the data
-		if _, err := w.Write(s.Data); err != nil {
+
+		hWritten, err := b.Write(exifHeader)
+		if err != nil {
 			return err
 		}
+		written += hWritten
+
+		ifdCount := uint16(1) // we're only adding one entry into the ifd
+		if err := binary.Write(&b, ifd.ByteOrder(), &ifdCount); err != nil {
+			return err
+		}
+		written += 2
+
+		tagEntry := tagEntries[0]
+		tag := tagEntry.TagId()
+		if err := binary.Write(&b, ifd.ByteOrder(), &tag); err != nil {
+			return err
+		}
+		written += 2
+
+		tagType := tagEntry.TagType()
+		if err := binary.Write(&b, ifd.ByteOrder(), &tagType); err != nil {
+			return err
+		}
+		written += 2
+
+		tagCount := tagEntry.UnitCount()
+		if err := binary.Write(&b, ifd.ByteOrder(), &tagCount); err != nil {
+			return err
+		}
+		written += 4
+
+		valueOffset, err := tagEntry.GetRawBytes()
+		if err != nil {
+			return err
+		}
+
+		vWritten, err := b.Write(valueOffset)
+		if err != nil {
+			return err
+		}
+		written += vWritten
+
+		valuePad := make([]byte, 4-vWritten)
+		pWritten, err := b.Write(valuePad)
+		if err != nil {
+			return err
+		}
+		written += pWritten
+
+		fmt.Println()
+		fmt.Println(b.Bytes())
+		fmt.Println()
+	}
+
+	// fill in the remaining exif body with blank bytes
+	blank := make([]byte, len(s.Data)-written)
+	if _, err := w.Write(blank); err != nil {
+		return err
 	}
 
 	return nil
