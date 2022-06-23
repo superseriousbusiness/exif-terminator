@@ -163,17 +163,17 @@ func (suite *TerminatorTestSuite) TestTerminateTurnip() {
 }
 
 func (suite *TerminatorTestSuite) TestTerminatePanorama() {
-	turnip, err := os.Open("./images/exif-panorama.jpg")
+	panorama, err := os.Open("./images/exif-panorama.jpg")
 	if err != nil {
 		panic(err)
 	}
 
-	stat, err := turnip.Stat()
+	stat, err := panorama.Stat()
 	if err != nil {
 		panic(err)
 	}
 
-	out, err := terminator.Terminate(turnip, int(stat.Size()), "jpeg")
+	out, err := terminator.Terminate(panorama, int(stat.Size()), "jpeg")
 	suite.NoError(err)
 
 	// we should be able to get some bytes back from the returned reader
@@ -189,9 +189,9 @@ func (suite *TerminatorTestSuite) TestTerminatePanorama() {
 	suite.NoError(err)
 
 	// bytes should be the same as the clean image
-	err = os.WriteFile("./images/exif-panorama-clean.jpg", b, 0666)
+	panoramaClean, err := os.ReadFile("./images/exif-panorama-clean.jpg")
 	suite.NoError(err)
-	// suite.EqualValues(turnipClean, b)
+	suite.EqualValues(panoramaClean, b)
 }
 
 func TestTerminatorTestSuite(t *testing.T) {
