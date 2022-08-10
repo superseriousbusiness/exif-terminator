@@ -71,20 +71,44 @@ var markerLen = map[byte]int{
 }
 
 type jpegVisitor struct {
-	js     *jpegstructure.JpegSplitter
-	writer io.Writer
+	js                *jpegstructure.JpegSplitter
+	writer            io.Writer
+	expectedFileSize  int
+	writtenTotalBytes int
 }
 
 // HandleSegment satisfies the visitor interface{} of the jpegstructure library.
 //
-// We don't really care about any of the parameters, since all we're interested
+// We don't really care about many of the parameters, since all we're interested
 // in here is the very last segment that was scanned.
-func (v *jpegVisitor) HandleSegment(_ byte, _ string, _ int, _ bool) error {
-	// all we want to do here is get the last segment that was scanned, and then manipulate it
+func (v *jpegVisitor) HandleSegment(segmentMarker byte, _ string, _ int, _ bool) error {
+	// get the most recent segment scanned (ie., last in the segments list)
 	segmentList := v.js.Segments()
 	segments := segmentList.Segments()
-	lastSegment := segments[len(segments)-1]
-	return v.writeSegment(lastSegment)
+	mostRecentSegment := segments[len(segments)-1]
+
+	// check if we've written the expected number of bytes by EOI
+	if segmentMarker == jpegstructure.MARKER_EOI {
+		// take account of the last 2 bytes taken up by the EOI
+		eoiLength := 2
+		
+		// this is the total file size we will
+		// have written including the EOI
+		willHaveWritten := v.writtenTotalBytes + eoiLength
+
+		if willHaveWritten < v.expectedFileSize {
+			// if we won't have written enough,
+			// pad the final segment before EOI
+			// so that we meet expected file size
+			missingBytes := make([]byte, v.expectedFileSize-willHaveWritten)
+			if _, err := v.writer.Write(missingBytes); err != nil {
+				return err
+			}
+		}
+	}
+
+	// process the segment
+	return v.writeSegment(mostRecentSegment)
 }
 
 func (v *jpegVisitor) writeSegment(s *jpegstructure.Segment) error {
