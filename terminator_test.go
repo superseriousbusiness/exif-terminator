@@ -39,13 +39,16 @@ func (suite *TerminatorTestSuite) TestTerminateKitten() {
 	if err != nil {
 		panic(err)
 	}
+	defer kitten.Close()
 
 	stat, err := kitten.Stat()
 	if err != nil {
 		panic(err)
 	}
 
-	out, err := terminator.Terminate(kitten, int(stat.Size()), "jpeg")
+	originalSize := int(stat.Size())
+
+	out, err := terminator.Terminate(kitten, originalSize, "jpeg")
 	suite.NoError(err)
 
 	// we should be able to get some bytes back from the returned reader
@@ -54,7 +57,7 @@ func (suite *TerminatorTestSuite) TestTerminateKitten() {
 	suite.NotEmpty(b)
 
 	// the processed image should have the same size as the initial image
-	suite.EqualValues(stat.Size(), len(b))
+	suite.EqualValues(originalSize, len(b))
 
 	// should be decodable as a jpeg
 	_, err = jpeg.Decode(bytes.NewBuffer(b))
@@ -71,13 +74,16 @@ func (suite *TerminatorTestSuite) TestTerminateSloth() {
 	if err != nil {
 		panic(err)
 	}
+	defer sloth.Close()
 
 	stat, err := sloth.Stat()
 	if err != nil {
 		panic(err)
 	}
 
-	out, err := terminator.Terminate(sloth, int(stat.Size()), "jpeg")
+	originalSize := int(stat.Size())
+
+	out, err := terminator.Terminate(sloth, originalSize, "jpeg")
 	suite.NoError(err)
 
 	// we should be able to get some bytes back from the returned reader
@@ -86,7 +92,7 @@ func (suite *TerminatorTestSuite) TestTerminateSloth() {
 	suite.NotEmpty(b)
 
 	// the processed image should have the same size as the initial image
-	suite.EqualValues(stat.Size(), len(b))
+	suite.EqualValues(originalSize, len(b))
 
 	// should be decodable as a jpeg
 	_, err = jpeg.Decode(bytes.NewBuffer(b))
@@ -103,13 +109,16 @@ func (suite *TerminatorTestSuite) TestTerminateComic() {
 	if err != nil {
 		panic(err)
 	}
+	defer comic.Close()
 
 	stat, err := comic.Stat()
 	if err != nil {
 		panic(err)
 	}
 
-	out, err := terminator.Terminate(comic, int(stat.Size()), "png")
+	originalSize := int(stat.Size())
+
+	out, err := terminator.Terminate(comic, originalSize, "png")
 	suite.NoError(err)
 
 	// we should be able to get some bytes back from the returned reader
@@ -118,7 +127,7 @@ func (suite *TerminatorTestSuite) TestTerminateComic() {
 	suite.NotEmpty(b)
 
 	// the processed image should have the same size as the initial image
-	suite.EqualValues(stat.Size(), len(b))
+	suite.EqualValues(originalSize, len(b))
 
 	// should be decodable as a png
 	_, err = png.Decode(bytes.NewBuffer(b))
@@ -135,13 +144,16 @@ func (suite *TerminatorTestSuite) TestTerminateTurnip() {
 	if err != nil {
 		panic(err)
 	}
+	defer turnip.Close()
 
 	stat, err := turnip.Stat()
 	if err != nil {
 		panic(err)
 	}
 
-	out, err := terminator.Terminate(turnip, int(stat.Size()), "jpeg")
+	originalSize := int(stat.Size())
+
+	out, err := terminator.Terminate(turnip, originalSize, "jpeg")
 	suite.NoError(err)
 
 	// we should be able to get some bytes back from the returned reader
@@ -150,7 +162,7 @@ func (suite *TerminatorTestSuite) TestTerminateTurnip() {
 	suite.NotEmpty(b)
 
 	// the processed image should have the same size as the initial image
-	suite.EqualValues(stat.Size(), len(b))
+	suite.EqualValues(originalSize, len(b))
 
 	// should be decodable as a jpeg
 	_, err = jpeg.Decode(bytes.NewBuffer(b))
@@ -167,13 +179,16 @@ func (suite *TerminatorTestSuite) TestTerminatePanorama() {
 	if err != nil {
 		panic(err)
 	}
+	defer panorama.Close()
 
 	stat, err := panorama.Stat()
 	if err != nil {
 		panic(err)
 	}
 
-	out, err := terminator.Terminate(panorama, int(stat.Size()), "jpeg")
+	originalSize := int(stat.Size())
+
+	out, err := terminator.Terminate(panorama, originalSize, "jpeg")
 	suite.NoError(err)
 
 	// we should be able to get some bytes back from the returned reader
@@ -182,7 +197,7 @@ func (suite *TerminatorTestSuite) TestTerminatePanorama() {
 	suite.NotEmpty(b)
 
 	// the processed image should have the same size as the initial image
-	suite.EqualValues(stat.Size(), len(b))
+	suite.EqualValues(originalSize, len(b))
 
 	// should be decodable as a jpeg
 	_, err = jpeg.Decode(bytes.NewBuffer(b))
