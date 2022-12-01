@@ -28,6 +28,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	terminator "github.com/superseriousbusiness/exif-terminator"
+	"golang.org/x/image/webp"
 )
 
 type TerminatorTestSuite struct {
@@ -172,6 +173,41 @@ func (suite *TerminatorTestSuite) TestTerminateTurnip() {
 	turnipClean, err := os.ReadFile("./images/giant-turnip-world-record-clean.jpg")
 	suite.NoError(err)
 	suite.EqualValues(turnipClean, b)
+}
+
+func (suite *TerminatorTestSuite) TestTerminatePJW() {
+	pjw, err := os.Open("./images/pjw.webp")
+	if err != nil {
+		panic(err)
+	}
+	defer pjw.Close()
+
+	stat, err := pjw.Stat()
+	if err != nil {
+		panic(err)
+	}
+
+	originalSize := int(stat.Size())
+
+	out, err := terminator.Terminate(pjw, originalSize, "webp")
+	suite.NoError(err)
+
+	// we should be able to get some bytes back from the returned reader
+	b, err := io.ReadAll(out)
+	suite.NoError(err)
+	suite.NotEmpty(b)
+
+	// the processed image should have the same size as the initial image
+	suite.EqualValues(originalSize, len(b))
+
+	// should be decodable as a webp
+	_, err = webp.Decode(bytes.NewBuffer(b))
+	suite.NoError(err)
+
+	// bytes should be the same as the clean image
+	pjwClean, err := os.ReadFile("./images/pjw-clean.webp")
+	suite.NoError(err)
+	suite.EqualValues(pjwClean, b)
 }
 
 func (suite *TerminatorTestSuite) TestTerminatePanorama() {
