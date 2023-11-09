@@ -282,6 +282,41 @@ func (suite *TerminatorTestSuite) TestTerminateRecipe() {
 	suite.EqualValues(recipeClean, b)
 }
 
+func (suite *TerminatorTestSuite) TestTerminateFish() {
+	fish, err := os.Open("./images/fish.png")
+	if err != nil {
+		panic(err)
+	}
+	defer fish.Close()
+
+	stat, err := fish.Stat()
+	if err != nil {
+		panic(err)
+	}
+
+	originalSize := int(stat.Size())
+
+	out, err := terminator.Terminate(fish, originalSize, "png")
+	suite.NoError(err)
+
+	// we should be able to get some bytes back from the returned reader
+	b, err := io.ReadAll(out)
+	suite.NoError(err)
+	suite.NotEmpty(b)
+
+	// the processed image should have the same size as the initial image
+	suite.EqualValues(originalSize, len(b))
+
+	// should be decodable as a png
+	_, err = png.Decode(bytes.NewBuffer(b))
+	suite.NoError(err)
+
+	// // bytes should be the same as the clean image
+	// recipeClean, err := os.ReadFile("./images/recipe-clean.jpg")
+	// suite.NoError(err)
+	// suite.EqualValues(recipeClean, b)
+}
+
 func TestTerminatorTestSuite(t *testing.T) {
 	suite.Run(t, &TerminatorTestSuite{})
 }
