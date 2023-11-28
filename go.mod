@@ -4,9 +4,9 @@ go 1.17
 
 require (
 	github.com/dsoprea/go-exif/v3 v3.0.0-20210625224831-a6301f85c82b
-	github.com/dsoprea/go-png-image-structure/v2 v2.0.0-20210512210324-29b889a6093d
 	github.com/stretchr/testify v1.7.0
 	github.com/superseriousbusiness/go-jpeg-image-structure/v2 v2.0.0-20220321154430-d89a106fdabe
+	github.com/superseriousbusiness/go-png-image-structure/v2 v2.0.0-SSB
 	golang.org/x/image v0.1.0
 )
 

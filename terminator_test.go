@@ -311,10 +311,10 @@ func (suite *TerminatorTestSuite) TestTerminateFish() {
 	_, err = png.Decode(bytes.NewBuffer(b))
 	suite.NoError(err)
 
-	// // bytes should be the same as the clean image
-	// recipeClean, err := os.ReadFile("./images/recipe-clean.jpg")
-	// suite.NoError(err)
-	// suite.EqualValues(recipeClean, b)
+	// bytes should be the same as the clean image
+	fishClean, err := os.ReadFile("./images/fish-clean.png")
+	suite.NoError(err)
+	suite.EqualValues(fishClean, b)
 }
 
 func TestTerminatorTestSuite(t *testing.T) {
