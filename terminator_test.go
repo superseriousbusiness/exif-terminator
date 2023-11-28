@@ -283,20 +283,17 @@ func (suite *TerminatorTestSuite) TestTerminateRecipe() {
 }
 
 func (suite *TerminatorTestSuite) TestTerminateFish() {
-	fish, err := os.Open("./images/fish.png")
+	fishDirty, err := os.ReadFile("./images/fish.png")
 	if err != nil {
 		panic(err)
 	}
-	defer fish.Close()
+	originalSize := len(fishDirty)
 
-	stat, err := fish.Stat()
-	if err != nil {
-		panic(err)
-	}
+	// should not be decodable as a png
+	_, err = png.Decode(bytes.NewBuffer(fishDirty))
+	suite.EqualError(err, "png: invalid format: invalid checksum")
 
-	originalSize := int(stat.Size())
-
-	out, err := terminator.Terminate(fish, originalSize, "png")
+	out, err := terminator.Terminate(bytes.NewBuffer(fishDirty), originalSize, "png")
 	suite.NoError(err)
 
 	// we should be able to get some bytes back from the returned reader
@@ -315,6 +312,10 @@ func (suite *TerminatorTestSuite) TestTerminateFish() {
 	fishClean, err := os.ReadFile("./images/fish-clean.png")
 	suite.NoError(err)
 	suite.EqualValues(fishClean, b)
+
+	// bytes should not be the same as the
+	// original, since we fixed some things.
+	suite.NotEqual(fishClean, fishDirty)
 }
 
 func TestTerminatorTestSuite(t *testing.T) {
