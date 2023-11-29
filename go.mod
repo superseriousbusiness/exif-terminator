@@ -1,6 +1,6 @@
 module github.com/superseriousbusiness/exif-terminator
 
-go 1.17
+go 1.21
 
 require (
 	github.com/dsoprea/go-exif/v3 v3.0.0-20210625224831-a6301f85c82b

@@ -79,9 +79,9 @@ func (v *pngVisitor) split(data []byte, atEOF bool) (int, []byte, error) {
 
 func (v *pngVisitor) writeChunk(chunk *pngstructure.Chunk) error {
 	if chunk.Type == pngstructure.EXifChunkType {
-		// Replace exif data with zero bytes.
-		zeros := make([]byte, len(chunk.Data))
-		chunk.Data = zeros
+		// Replace exif data
+		// with zero bytes.
+		clear(chunk.Data)
 	}
 
 	// Fix CRC of each chunk.
