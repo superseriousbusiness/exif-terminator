@@ -1,3 +1,7 @@
+***This repository now lives at Codeberg: https://codeberg.org/superseriousbusiness/exif-terminator***
+
+***This repository is a read-only archive.***
+
 # exif-terminator
 
 `exif-terminator` removes exif data from images (jpeg and png currently supported) in a streaming manner. All you need to do is provide a reader of the image in, and exif-terminator will provide a reader of the image out.
